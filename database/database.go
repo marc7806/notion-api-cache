@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/marc7806/notion-cache/config"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,12 +22,4 @@ func InitClient() *mongo.Client {
 	fmt.Printf("Successfully initialized database connection")
 	MongoClient = client
 	return client
-}
-
-func getDatabase(client *mongo.Client) *mongo.Database {
-	return client.Database(os.Getenv("MONGO_DB_NAME"))
-}
-
-func getCollection(database *mongo.Database, collection_name string) *mongo.Collection {
-	return database.Collection(collection_name)
 }
