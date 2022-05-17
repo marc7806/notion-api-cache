@@ -12,6 +12,7 @@ var (
 
 func main() {
 	config.LoadEnvironment()
+	// todo: add api-token middleware for authentication
 	buildRoutes()
 	router.Run(":8090")
 }

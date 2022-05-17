@@ -12,8 +12,6 @@ import (
 var MongoClient *mongo.Client
 
 func InitClient() *mongo.Client {
-	println("This is my config")
-	println(config.DbUri)
 	clientOptions := options.Client().ApplyURI(config.DbUri)
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
