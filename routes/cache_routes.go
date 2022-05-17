@@ -26,12 +26,13 @@ func (s *RefreshState) setRefreshState(state bool) {
 
 type CacheStatusInformationResponse struct {
 	LastUpdated               string `json:"last_updated"`
-	NumberOfDatabaseDocuments int32  `json:"num_database_documents"`
+	NumberOfDatabaseDocuments int    `json:"num_database_documents"`
 }
 
 var (
-	lastUpdated  time.Time
-	refreshState *RefreshState
+	lastUpdated    time.Time
+	numUpdatedDocs int
+	refreshState   *RefreshState
 )
 
 func AddCacheRoutes(router *gin.RouterGroup) {
@@ -55,7 +56,11 @@ func refreshCacheEndpoint(c *gin.Context) {
 }
 
 func cacheStatusInformationEndpoint(c *gin.Context) {
-	c.String(200, "Cache not initialize")
+	cacheInfo := CacheStatusInformationResponse{
+		LastUpdated:               lastUpdated.Format(time.RFC3339),
+		NumberOfDatabaseDocuments: numUpdatedDocs,
+	}
+	c.JSON(http.StatusAccepted, cacheInfo)
 }
 
 func refreshNotionCache() {
@@ -67,7 +72,7 @@ func refreshNotionCache() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = cache.CacheNotionDatabases(client, config.NotionDatabases)
+	updatedDocsLength, err := cache.CacheNotionDatabases(client, config.NotionDatabases)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,5 +83,6 @@ func refreshNotionCache() {
 		log.Fatal(err)
 	}
 	lastUpdated = time.Now()
+	numUpdatedDocs = updatedDocsLength
 	refreshState.setRefreshState(false)
 }

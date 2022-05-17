@@ -12,7 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CacheNotionDatabases(client *mongo.Client, databases []string) (err error) {
+func CacheNotionDatabases(client *mongo.Client, databases []string) (updatedDocsLength int, err error) {
+	var numDocuments int
 	for _, notionDatabaseId := range databases {
 		log.Println("Saving notion data to database")
 
@@ -40,8 +41,9 @@ func CacheNotionDatabases(client *mongo.Client, databases []string) (err error) 
 				log.Printf("Updated existing document %s", page.ID)
 			}
 		}
+		numDocuments += len(notionData.Results)
 	}
-	return
+	return numDocuments, nil
 }
 
 func ClearCache(client *mongo.Client, databases []string) {
