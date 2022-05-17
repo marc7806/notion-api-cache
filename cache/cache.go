@@ -12,12 +12,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CacheNotionDatabases(client *mongo.Client, databases []string) {
+func CacheNotionDatabases(client *mongo.Client, databases []string) (err error) {
 	for _, notionDatabaseId := range databases {
 		log.Println("Saving notion data to database")
 
 		notionData := notion.FetchNotionDataByDatabaseId(notionDatabaseId)
 		collection := client.Database(config.DbName).Collection(notionDatabaseId)
+
+		// error handler function
+		defer func() {
+			if r := recover(); r != nil {
+				err = r.(error)
+			}
+		}()
 
 		for _, page := range notionData.Results {
 			update := bson.D{{"$set", page}}
@@ -34,6 +41,7 @@ func CacheNotionDatabases(client *mongo.Client, databases []string) {
 			}
 		}
 	}
+	return
 }
 
 func ClearCache(client *mongo.Client, databases []string) {
