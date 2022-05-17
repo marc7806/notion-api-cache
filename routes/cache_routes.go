@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/marc7806/notion-cache/cache"
@@ -11,13 +13,25 @@ import (
 	"github.com/marc7806/notion-cache/database"
 )
 
+type RefreshState struct {
+	mu           sync.Mutex
+	isRefreshing bool
+}
+
+func (s *RefreshState) setRefreshState(state bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.isRefreshing = state
+}
+
 type CacheStatusInformationResponse struct {
 	LastUpdated               string `json:"last_updated"`
 	NumberOfDatabaseDocuments int32  `json:"num_database_documents"`
 }
 
 var (
-	refreshChannel = make(chan bool)
+	lastUpdated  time.Time
+	refreshState *RefreshState
 )
 
 func AddCacheRoutes(router *gin.RouterGroup) {
@@ -26,11 +40,18 @@ func AddCacheRoutes(router *gin.RouterGroup) {
 		cacheEndpoints.POST("/refresh", refreshCacheEndpoint)
 		cacheEndpoints.GET("/status", cacheStatusInformationEndpoint)
 	}
+	// initialize refresh state
+	refreshState = new(RefreshState)
 }
 
 func refreshCacheEndpoint(c *gin.Context) {
+	log.Print(refreshState.isRefreshing)
+	if refreshState.isRefreshing {
+		c.JSON(http.StatusAccepted, gin.H{"status": "Cache is currently refreshing"})
+		return
+	}
 	go refreshNotionCache()
-	c.JSON(http.StatusOK, gin.H{"status": "Successfully triggered cache refresh"})
+	c.JSON(http.StatusOK, gin.H{"status": "Successfully triggered new cache refresh"})
 }
 
 func cacheStatusInformationEndpoint(c *gin.Context) {
@@ -38,12 +59,7 @@ func cacheStatusInformationEndpoint(c *gin.Context) {
 }
 
 func refreshNotionCache() {
-	refreshNotAlreadyTriggered := <-refreshChannel
-	if refreshNotAlreadyTriggered {
-		return
-	}
-
-	refreshChannel <- true
+	refreshState.setRefreshState(true)
 	client := database.InitClient()
 
 	// Check the connection
@@ -61,5 +77,6 @@ func refreshNotionCache() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	refreshChannel <- false
+	lastUpdated = time.Now()
+	refreshState.setRefreshState(false)
 }
