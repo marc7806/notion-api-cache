@@ -4,15 +4,72 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
+	"time"
 
 	"github.com/marc7806/notion-cache/config"
+	"github.com/marc7806/notion-cache/database"
 	"github.com/marc7806/notion-cache/notion"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func CacheNotionDatabases(client *mongo.Client, databases []string) (updatedDocsLength int, err error) {
+type RefreshState struct {
+	mu           sync.Mutex
+	isRefreshing bool
+}
+
+func (s *RefreshState) setRefreshState(state bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.isRefreshing = state
+}
+
+var (
+	lastUpdated    time.Time
+	numUpdatedDocs int
+	refreshState   *RefreshState
+)
+
+func Initialize() {
+	// initialize refresh state
+	refreshState = new(RefreshState)
+}
+
+func HandleCacheRefresh() (bool, time.Time, int) {
+	log.Printf("Refresh state: %v", refreshState.isRefreshing)
+	if !refreshState.isRefreshing {
+		go refreshNotionCache()
+	}
+	return refreshState.isRefreshing, lastUpdated, numUpdatedDocs
+}
+
+func refreshNotionCache() {
+	refreshState.setRefreshState(true)
+	client := database.InitClient()
+
+	// Check the connection
+	err := client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	updatedDocsLength, err := cacheNotionDatabases(client, config.NotionDatabases)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Close the connection once no longer needed
+	err = client.Disconnect(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	lastUpdated = time.Now()
+	numUpdatedDocs = updatedDocsLength
+	refreshState.setRefreshState(false)
+}
+
+func cacheNotionDatabases(client *mongo.Client, databases []string) (updatedDocsLength int, err error) {
 	var numDocuments int
 	for _, notionDatabaseId := range databases {
 		log.Println("Saving notion data to database")
