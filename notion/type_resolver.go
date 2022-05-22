@@ -30,7 +30,7 @@ func ResolvePropertyType(property map[string]interface{}) (propValue string, err
 	if ok {
 		return resolver(property, propType), nil
 	}
-	return "", errors.New("No matching resolver found")
+	return "", errors.New("no matching resolver found")
 }
 
 func resolvePlainText(prop map[string]interface{}, propType string) string {

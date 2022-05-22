@@ -24,7 +24,7 @@ type Page struct {
 		Type       string `json:"type"`
 		DatabaseID string `json:"database_id"`
 	} `json:"parent"`
-	Properties []PageProperty
+	Properties map[string]PageProperty
 }
 
 type PageProperty struct {
@@ -46,15 +46,15 @@ func ParsePage(notionResponseObject *NotionDatabaseObject) *Page {
 		URL:            notionResponseObject.URL,
 		Parent:         notionResponseObject.Parent,
 	}
-	var pageProps []PageProperty
+	pageProps := make(map[string]PageProperty)
 	for key, prop := range notionResponseObject.Properties {
 		propValue, err := ResolvePropertyType(prop)
 		if err == nil {
-			pageProps = append(pageProps, PageProperty{
+			pageProps[key] = PageProperty{
 				Name:  key,
 				Type:  prop["type"].(string),
 				Value: propValue,
-			})
+			}
 		}
 	}
 	page.Properties = pageProps
