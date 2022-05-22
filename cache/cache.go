@@ -32,9 +32,11 @@ var (
 	refreshState   *RefreshState
 )
 
-func Initialize() {
+func init() {
+	log.Println("Initializing Notion cache")
 	// initialize refresh state
 	refreshState = new(RefreshState)
+	HandleCacheRefresh()
 }
 
 func HandleCacheRefresh() (bool, time.Time, int) {
@@ -85,7 +87,7 @@ func cacheNotionDatabases(client *mongo.Client, databases []string) (updatedDocs
 		}()
 
 		for _, page := range notionData.Results {
-			update := bson.D{{"$set", page}}
+			update := bson.D{{"$set", notion.ParsePage(&page)}}
 			opts := options.Update().SetUpsert(true)
 			result, err := collection.UpdateOne(context.TODO(), bson.M{"_id": page.ID}, update, opts)
 			if err != nil {

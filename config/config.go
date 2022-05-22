@@ -19,7 +19,8 @@ func Get(key string) string {
 	return os.Getenv(key)
 }
 
-func LoadEnvironment() {
+func init() {
+	log.Println("Initializing environment")
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
 	}
