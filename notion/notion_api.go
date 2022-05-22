@@ -38,9 +38,9 @@ type NotionDatabaseObject struct {
 		Type       string `json:"type"`
 		DatabaseID string `json:"database_id"`
 	} `json:"parent"`
-	Archived   bool        `json:"archived"`
-	Properties interface{} `json:"properties"`
-	URL        string      `json:"url"`
+	Archived   bool                              `json:"archived"`
+	Properties map[string]map[string]interface{} `json:"properties"`
+	URL        string                            `json:"url"`
 }
 
 func FetchNotionDataByDatabaseId(database_id string) *NotionResponse {
