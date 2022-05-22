@@ -1,8 +1,11 @@
 package notion
 
-import "log"
+import (
+	"errors"
+	"log"
+)
 
-type fn func(map[string]interface{}, string) interface{}
+type fn func(map[string]interface{}, string) string
 
 var (
 	resolvers map[string]fn
@@ -21,16 +24,16 @@ func init() {
 	}
 }
 
-func ResolvePropertyType(property map[string]interface{}) interface{} {
+func ResolvePropertyType(property map[string]interface{}) (propValue string, err error) {
 	propType := property["type"].(string)
 	resolver, ok := resolvers[propType]
 	if ok {
-		return resolver(property, propType)
+		return resolver(property, propType), nil
 	}
-	return nil
+	return "", errors.New("No matching resolver found")
 }
 
-func resolvePlainText(prop map[string]interface{}, propType string) interface{} {
+func resolvePlainText(prop map[string]interface{}, propType string) string {
 	richTextData := prop[propType].([]interface{})
 	result := ""
 
@@ -44,23 +47,23 @@ func resolvePlainText(prop map[string]interface{}, propType string) interface{} 
 	return result
 }
 
-func resolveLastEditedTime(prop map[string]interface{}, propType string) interface{} {
-	return prop[propType]
+func resolveLastEditedTime(prop map[string]interface{}, propType string) string {
+	return prop[propType].(string)
 }
 
-func resolveCreatedTime(prop map[string]interface{}, propType string) interface{} {
-	return prop[propType]
+func resolveCreatedTime(prop map[string]interface{}, propType string) string {
+	return prop[propType].(string)
 }
 
-func resolveSelect(prop map[string]interface{}, propType string) interface{} {
+func resolveSelect(prop map[string]interface{}, propType string) string {
 	selectData := prop[propType]
 	if selectData == nil {
 		return ""
 	}
-	return selectData.(map[string]interface{})["name"]
+	return selectData.(map[string]interface{})["name"].(string)
 }
 
-func resolveMultiSelect(prop map[string]interface{}, propType string) interface{} {
+func resolveMultiSelect(prop map[string]interface{}, propType string) string {
 	multiSelectOptions := prop[propType].([]interface{})
 	result := ""
 
@@ -75,6 +78,6 @@ func resolveMultiSelect(prop map[string]interface{}, propType string) interface{
 	return result
 }
 
-func resolveFormula(prop map[string]interface{}, propType string) interface{} {
-	return prop[propType].(map[string]interface{})["string"]
+func resolveFormula(prop map[string]interface{}, propType string) string {
+	return prop[propType].(map[string]interface{})["string"].(string)
 }
