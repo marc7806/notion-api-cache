@@ -40,16 +40,22 @@ func init() {
 }
 
 func HandleCacheRefresh() (bool, time.Time, int) {
-	log.Printf("Refresh state: %v", refreshState.isRefreshing)
 	if !refreshState.isRefreshing {
 		go refreshNotionCache()
 	}
 	return refreshState.isRefreshing, lastUpdated, numUpdatedDocs
 }
 
+func HandleCacheClear() (bool, time.Time, int) {
+	if !refreshState.isRefreshing {
+		go clearCache()
+	}
+	return refreshState.isRefreshing, lastUpdated, numUpdatedDocs
+}
+
 func refreshNotionCache() {
 	refreshState.setRefreshState(true)
-	client := database.InitClient()
+	client := database.ConnectDb()
 
 	// Check the connection
 	err := client.Ping(context.TODO(), nil)
@@ -61,11 +67,7 @@ func refreshNotionCache() {
 		log.Fatal(err)
 	}
 
-	// Close the connection once no longer needed
-	err = client.Disconnect(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
+	database.DisconnectDb()
 	lastUpdated = time.Now()
 	numUpdatedDocs = updatedDocsLength
 	refreshState.setRefreshState(false)
@@ -105,9 +107,13 @@ func cacheNotionDatabases(client *mongo.Client, databases []string) (updatedDocs
 	return numDocuments, nil
 }
 
-func ClearCache(client *mongo.Client, databases []string) {
+func clearCache() {
+	refreshState.setRefreshState(true)
+	client := database.ConnectDb()
+
 	log.Println("Start clearing database")
-	for _, notionDatabaseId := range databases {
+	var updateDocumentsCount int
+	for _, notionDatabaseId := range config.NotionDatabases {
 		collection := client.Database(config.DbName).Collection(notionDatabaseId)
 
 		// Delete all the documents in the collection
@@ -116,5 +122,11 @@ func ClearCache(client *mongo.Client, databases []string) {
 			log.Fatal(err)
 		}
 		fmt.Printf("Deleted %v documents in collection %s\n", deleteResult.DeletedCount, notionDatabaseId)
+		updateDocumentsCount += int(deleteResult.DeletedCount)
 	}
+
+	database.DisconnectDb()
+	lastUpdated = time.Now()
+	numUpdatedDocs = updateDocumentsCount
+	refreshState.setRefreshState(false)
 }

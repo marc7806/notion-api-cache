@@ -23,6 +23,7 @@ func AddCacheRoutes(router *gin.RouterGroup) {
 	{
 		cacheEndpoints.POST("/refresh", refreshCacheEndpoint)
 		cacheEndpoints.GET("/status", cacheStatusInformationEndpoint)
+		cacheEndpoints.POST("/clear", clearCacheEndpoint)
 	}
 }
 
@@ -35,6 +36,17 @@ func refreshCacheEndpoint(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "Successfully triggered new cache refresh"})
+}
+
+func clearCacheEndpoint(c *gin.Context) {
+	isRefreshing, lastUpdatedTime, numDocs := cache.HandleCacheClear()
+	lastUpdated = lastUpdatedTime
+	numUpdatedDocs = numDocs
+	if isRefreshing {
+		c.JSON(http.StatusAccepted, gin.H{"status": "Cache is currently refreshing"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "Successfully triggered cache clearing"})
 }
 
 func cacheStatusInformationEndpoint(c *gin.Context) {
