@@ -38,8 +38,13 @@ func ParsePage(notionResponseObject *NotionDatabaseObject) *Page {
 		ID:             notionResponseObject.ID,
 		CreatedTime:    notionResponseObject.CreatedTime,
 		LastEditedTime: notionResponseObject.LastEditedTime,
-		CreatedBy:      notionResponseObject.CreatedBy.ID,
-		LastEditedBy:   notionResponseObject.LastEditedBy.ID,
+		CreatedBy:      notionResponseObject.CreatedBy,
+		LastEditedBy:   notionResponseObject.LastEditedBy,
+		Cover:          notionResponseObject.Cover,
+		Icon:           notionResponseObject.Icon,
+		Archived:       notionResponseObject.Archived,
+		URL:            notionResponseObject.URL,
+		Parent:         notionResponseObject.Parent,
 	}
 	var pageProps []PageProperty
 	for key, prop := range notionResponseObject.Properties {
