@@ -10,7 +10,6 @@ import (
 )
 
 type QueryRequestBody struct {
-	DatabaseId  string                 `json:"database_id"`
 	Filter      map[string]interface{} `json:"filter"`
 	Sorts       []QuerySort            `json:"sorts"`
 	StartCursor string                 `json:"start_cursor"`
@@ -30,15 +29,15 @@ type QuerySort struct {
 }
 
 func AddNotionRoutes(router *gin.RouterGroup) {
-	notionEndpoints := router.Group("/notion")
+	notionEndpoints := router.Group("/databases")
 	{
-		notionEndpoints.POST("/query", queryEndpoint)
+		notionEndpoints.POST("/:databaseId/query", queryEndpoint)
 	}
 }
 
-// TODO: return response in same format as the original notion response
 // TODO: add support for cursor based pagination...? to remain constant with the original notion query api
 func queryEndpoint(c *gin.Context) {
+	databaseId := c.Param("databaseId")
 	requestBody := QueryRequestBody{}
 
 	if err := c.Bind(&requestBody); err != nil {
@@ -46,7 +45,7 @@ func queryEndpoint(c *gin.Context) {
 		return
 	}
 	filterTree := notion.CreateFilterTree(requestBody.Filter)
-	results, nextCursor, hasMore := database.QueryData(requestBody.DatabaseId, filtertreeparser.ParseFilterTree(filterTree), requestBody.Sorts, requestBody.Size, requestBody.StartCursor)
+	results, nextCursor, hasMore := database.QueryData(databaseId, filtertreeparser.ParseFilterTree(filterTree), requestBody.Sorts, requestBody.Size, requestBody.StartCursor)
 	c.JSON(http.StatusOK, QueryResponseBody{
 		Object:     "list",
 		Results:    results,

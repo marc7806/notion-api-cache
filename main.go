@@ -17,7 +17,7 @@ func main() {
 }
 
 func buildRoutes() {
-	api := router.Group("/api")
+	api := router.Group("/v1")
 	routes.AddCacheRoutes(api)
 	routes.AddNotionRoutes(api)
 }
