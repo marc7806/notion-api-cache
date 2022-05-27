@@ -26,7 +26,7 @@ func init() {
 	}
 
 	DbUri = Get("MONGODB_URI")
-	DbName = Get("MONGO_DB_NAME")
+	DbName = Get("MONGODB_NAME")
 	NotionApiKey = Get("NOTION_API_KEY")
 	NotionDatabases = strings.Split(Get("NOTION_DATABASES"), ",")
 }

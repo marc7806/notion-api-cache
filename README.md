@@ -16,7 +16,7 @@ docker build -t notion-api-cache .
 
 docker run -d \
     -e MONGODB_URI=<mongodb-url> \
-    -e MONGO_DB_NAME=notion-api-cache \
+    -e MONGODB_NAME=notion-api-cache \
     -e NOTION_API_KEY=<notion-api-secret-key> \
     -e NOTION_DATABASES=<comma-separated-list-of-notion-database-ids> \
     -p 8090:8080 \
