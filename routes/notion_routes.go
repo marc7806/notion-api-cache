@@ -5,15 +5,23 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/marc7806/notion-cache/database"
+	filtertreeparser "github.com/marc7806/notion-cache/database/filtertree-parser"
 	"github.com/marc7806/notion-cache/notion"
 )
 
 type QueryRequestBody struct {
-	DatabaseId string                 `json:"database_id"`
-	Filter     map[string]interface{} `json:"filter"`
-	Sorts      []QuerySort            `json:"sorts"`
-	Start      int64                  `json:"start"`
-	Size       int64                  `json:"page_size"`
+	DatabaseId  string                 `json:"database_id"`
+	Filter      map[string]interface{} `json:"filter"`
+	Sorts       []QuerySort            `json:"sorts"`
+	StartCursor string                 `json:"start_cursor"`
+	Size        int64                  `json:"page_size"`
+}
+
+type QueryResponseBody struct {
+	Object     string         `json:"object"`
+	Results    []*notion.Page `json:"results"`
+	NextCursor string         `json:"next_cursor"`
+	HasMore    bool           `json:"has_more"`
 }
 
 type QuerySort struct {
@@ -28,6 +36,8 @@ func AddNotionRoutes(router *gin.RouterGroup) {
 	}
 }
 
+// TODO: return response in same format as the original notion response
+// TODO: add support for cursor based pagination...? to remain constant with the original notion query api
 func queryEndpoint(c *gin.Context) {
 	requestBody := QueryRequestBody{}
 
@@ -36,6 +46,11 @@ func queryEndpoint(c *gin.Context) {
 		return
 	}
 	filterTree := notion.CreateFilterTree(requestBody.Filter)
-	results := database.QueryData(requestBody.DatabaseId, database.ParseToMongoDbQuery(filterTree), requestBody.Sorts, requestBody.Size, requestBody.Start)
-	c.JSON(http.StatusOK, results)
+	results, nextCursor, hasMore := database.QueryData(requestBody.DatabaseId, filtertreeparser.ParseFilterTree(filterTree), requestBody.Sorts, requestBody.Size, requestBody.StartCursor)
+	c.JSON(http.StatusOK, QueryResponseBody{
+		Object:     "list",
+		Results:    results,
+		NextCursor: nextCursor,
+		HasMore:    hasMore,
+	})
 }

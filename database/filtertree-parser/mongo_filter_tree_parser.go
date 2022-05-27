@@ -1,11 +1,13 @@
-package database
+package filtertreeparser
 
 import (
 	"github.com/marc7806/notion-cache/notion"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func ParseToMongoDbQuery(filterTree *notion.FilterTreeNode) *bson.M {
+type MongoDbParser struct{}
+
+func (m MongoDbParser) parse(filterTree *notion.FilterTreeNode) *bson.M {
 	if filterTree.CompoundType == nil {
 		return &bson.M{
 			"properties." + filterTree.Operation.Property + ".value": mapOperationToMongoDbRepresentation(filterTree.Operation),
@@ -14,7 +16,7 @@ func ParseToMongoDbQuery(filterTree *notion.FilterTreeNode) *bson.M {
 
 	var mappedChildren []interface{}
 	for _, child := range filterTree.Children {
-		mappedChildren = append(mappedChildren, ParseToMongoDbQuery(&child))
+		mappedChildren = append(mappedChildren, m.parse(&child))
 	}
 
 	return &bson.M{

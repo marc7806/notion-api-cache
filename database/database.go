@@ -32,11 +32,10 @@ func DisconnectDb() {
 	}
 }
 
-func QueryData(collectionId string, findQuery *primitive.M, sort interface{}, pageSize int64, start int64) []*notion.Page {
+func QueryData(collectionId string, findQuery *primitive.M, sort interface{}, pageSize int64, startCursor string) (result []*notion.Page, nextCursor string, hasMore bool) {
 	client := ConnectDb()
 	var options options.FindOptions
 	options.Limit = &pageSize
-	options.Skip = &start
 	// options.Sort = sort
 
 	var results []*notion.Page
@@ -60,5 +59,8 @@ func QueryData(collectionId string, findQuery *primitive.M, sort interface{}, pa
 		log.Fatal(err)
 	}
 	cur.Close(context.TODO())
-	return results
+	nextCursor = results[len(results)-1].ID
+	hasMore = true
+
+	return results, nextCursor, hasMore
 }
