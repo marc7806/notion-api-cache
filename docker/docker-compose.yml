@@ -7,3 +7,9 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=admin
+  notion-api-cache:
+    build: ../
+    ports:
+      - 8090:8080
+    env_file:
+      - ../.env

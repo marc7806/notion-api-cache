@@ -13,7 +13,7 @@ func main() {
 	// todo: add api-token middleware for authentication
 	// todo: add scheduler for running cache jobs in defined interval
 	buildRoutes()
-	router.Run(":8090")
+	router.Run(":8080")
 }
 
 func buildRoutes() {
