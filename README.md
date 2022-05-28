@@ -39,11 +39,11 @@ POST http://localhost:8080/v1/cache/refresh
 ```
 Clear Cache:
 ```
-POST http://localhost:8080/v1/cache/status
+POST http://localhost:8080/v1/cache/clear
 ```
 Get Cache Status:
 ```
-GET http://localhost:8080/v1/cache/clear
+GET http://localhost:8080/v1/cache/status
 ```
 The Caching Scheduler can be configure using the ``CACHE_SCHEDULER_HOURS``, ``CACHE_SCHEDULER_MINUTES`` and ``CACHE_SCHEDULER_DAYS`` environment variables. ``CACHE_SCHEDULER_DAYS=1`` would mean that the notion databases get synced once every day.
 
