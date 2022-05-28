@@ -40,5 +40,16 @@ Use mongodb to store your notion database data and query it with the native noti
 ## Supported Notion Query Operators
 * Equals
 
+## Upcoming features
+✅ Cursor-based Pagination support
+
+⬜ Scheduler for syncing the notion database data in defined intervals
+
+⬜ Sorting support
+
+⬜ Api-token middleware for authentication
+
+⬜ Better notion query syntax and type support
+
 ## Authors
 This notion-api-cache was written by [Marc7806](https://github.com/marc7806/)
