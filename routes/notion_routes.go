@@ -7,6 +7,8 @@ import (
 	"github.com/marc7806/notion-cache/database"
 	filtertreeparser "github.com/marc7806/notion-cache/database/filtertree-parser"
 	"github.com/marc7806/notion-cache/notion"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type QueryRequestBody struct {
@@ -35,7 +37,6 @@ func AddNotionRoutes(router *gin.RouterGroup) {
 	}
 }
 
-// TODO: add support for cursor based pagination...? to remain constant with the original notion query api
 func queryEndpoint(c *gin.Context) {
 	databaseId := c.Param("databaseId")
 	requestBody := QueryRequestBody{}
@@ -44,8 +45,17 @@ func queryEndpoint(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	filterTree := notion.CreateFilterTree(requestBody.Filter)
-	results, nextCursor, hasMore := database.QueryData(databaseId, filtertreeparser.ParseFilterTree(filterTree), requestBody.Sorts, requestBody.Size, requestBody.StartCursor)
+
+	var findQuery *primitive.M
+	if findQuery == nil {
+		findQuery = &bson.M{}
+	} else {
+		filterTree := notion.CreateFilterTree(requestBody.Filter)
+		findQuery = filtertreeparser.ParseFilterTree(filterTree)
+	}
+
+	results, nextCursor, hasMore := database.QueryData(databaseId, findQuery, requestBody.Sorts, requestBody.Size, requestBody.StartCursor)
+
 	c.JSON(http.StatusOK, QueryResponseBody{
 		Object:     "list",
 		Results:    results,
