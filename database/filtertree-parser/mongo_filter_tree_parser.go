@@ -29,7 +29,13 @@ func mapOperationToMongoDbRepresentation(operation *notion.FilterOperation) inte
 		return bson.M{
 			"$eq": operation.Value,
 		}
+	} else if operation.Condition == notion.Contains {
+		return bson.M{
+			"$regex": operation.Value,
+		}
 	} else {
-		return bson.M{}
+		return bson.M{
+			"$regex": "",
+		}
 	}
 }

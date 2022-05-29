@@ -31,6 +31,7 @@ POST http://localhost:8080/v1/databases/<database-id>/query
 ```
 #### Currently supported Notion filter operators
 * equals
+* contains
 
 ### Cache Management Endpoints
 Update Cache:
