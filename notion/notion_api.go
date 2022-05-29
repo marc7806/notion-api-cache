@@ -43,9 +43,14 @@ type NotionDatabaseObject struct {
 	URL        string                            `json:"url"`
 }
 
-func FetchNotionDataByDatabaseId(database_id string) *NotionResponse {
+func FetchNotionDataByDatabaseId(database_id string, start_cursor string) *NotionResponse {
 	url := fmt.Sprintf("https://api.notion.com/v1/databases/%s/query", database_id)
+
 	payload := strings.NewReader("{}")
+	if start_cursor != "" {
+		payload = strings.NewReader(fmt.Sprintf("{ \"start_cursor\": \"%s\" }", start_cursor))
+	}
+
 	req, _ := http.NewRequest("POST", url, payload)
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Notion-Version", "2022-02-22")

@@ -81,31 +81,38 @@ func cacheNotionDatabases(client *mongo.Client, databases []string) (updatedDocs
 	for _, notionDatabaseId := range databases {
 		log.Println("Saving notion data to database")
 
-		notionData := notion.FetchNotionDataByDatabaseId(notionDatabaseId)
-		collection := client.Database(config.DbName).Collection(notionDatabaseId)
+		startCursor := ""
+		hasMore := true
+		for hasMore {
+			notionData := notion.FetchNotionDataByDatabaseId(notionDatabaseId, startCursor)
+			collection := client.Database(config.DbName).Collection(notionDatabaseId)
 
-		// error handler function
-		defer func() {
-			if r := recover(); r != nil {
-				err = r.(error)
-			}
-		}()
+			// error handler function
+			defer func() {
+				if r := recover(); r != nil {
+					err = r.(error)
+				}
+			}()
 
-		for _, page := range notionData.Results {
-			update := bson.D{{"$set", notion.ParsePage(&page)}}
-			opts := options.Update().SetUpsert(true)
-			result, err := collection.UpdateOne(context.TODO(), bson.M{"_id": page.ID}, update, opts)
-			if err != nil {
-				panic(err)
-			}
+			for _, page := range notionData.Results {
+				update := bson.D{{"$set", notion.ParsePage(&page)}}
+				opts := options.Update().SetUpsert(true)
+				result, err := collection.UpdateOne(context.TODO(), bson.M{"_id": page.ID}, update, opts)
+				if err != nil {
+					panic(err)
+				}
 
-			if result.UpsertedCount > 0 {
-				log.Printf("Inserted new document %s", page.ID)
-			} else {
-				log.Printf("Updated existing document %s", page.ID)
+				if result.UpsertedCount > 0 {
+					log.Printf("Inserted new document %s", page.ID)
+				} else {
+					log.Printf("Updated existing document %s", page.ID)
+				}
 			}
+			numDocuments += len(notionData.Results)
+			startCursor = notionData.NextCursor
+			hasMore = notionData.HasMore
+			log.Printf("Finished page. Go to next cursor: %s", startCursor)
 		}
-		numDocuments += len(notionData.Results)
 	}
 	return numDocuments, nil
 }
