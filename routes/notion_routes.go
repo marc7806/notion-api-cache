@@ -47,7 +47,7 @@ func queryEndpoint(c *gin.Context) {
 	}
 
 	var findQuery *primitive.M
-	if findQuery == nil {
+	if requestBody.Filter == nil {
 		findQuery = &bson.M{}
 	} else {
 		filterTree := notion.CreateFilterTree(requestBody.Filter)

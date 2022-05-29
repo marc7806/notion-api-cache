@@ -77,6 +77,10 @@ func QueryData(collectionId string, findQuery *primitive.M, sort interface{}, pa
 		hasMore = false
 	}
 
+	if len(results) == 0 {
+		results = []*notion.Page{}
+	}
+
 	return results, nextCursor, hasMore
 }
 
