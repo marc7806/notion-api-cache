@@ -18,6 +18,7 @@ var (
 	CacheSchedulerDays    int
 	CacheSchedulerHours   int
 	CacheSchedulerMinutes int
+	CacheOnStartup        bool
 )
 
 func Get(key string) string {
@@ -37,4 +38,5 @@ func init() {
 	CacheSchedulerHours, _ = strconv.Atoi(Get("CACHE_SCHEDULER_HOURS"))
 	CacheSchedulerMinutes, _ = strconv.Atoi(Get("CACHE_SCHEDULER_MINUTES"))
 	CacheSchedulerDays, _ = strconv.Atoi(Get("CACHE_SCHEDULER_DAYS"))
+	CacheOnStartup, _ = strconv.ParseBool(Get("CACHE_ON_STARTUP"))
 }

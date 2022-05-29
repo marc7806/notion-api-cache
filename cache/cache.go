@@ -36,7 +36,10 @@ func init() {
 	log.Println("Initializing Notion cache")
 	// initialize refresh state
 	refreshState = new(RefreshState)
-	HandleCacheRefresh()
+
+	if config.CacheOnStartup {
+		HandleCacheRefresh()
+	}
 }
 
 func HandleCacheRefresh() (bool, time.Time, int) {
