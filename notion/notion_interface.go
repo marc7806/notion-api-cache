@@ -24,13 +24,13 @@ type Page struct {
 		Type       string `json:"type"`
 		DatabaseID string `json:"database_id"`
 	} `json:"parent"`
-	Properties map[string]PageProperty
+	Properties map[string]PageProperty `json:"properties"`
 }
 
 type PageProperty struct {
-	Name  string
-	Type  string
-	Value string
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Value string `json:"value"`
 }
 
 func ParsePage(notionResponseObject *NotionDatabaseObject) *Page {
