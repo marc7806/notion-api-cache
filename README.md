@@ -29,6 +29,41 @@ POST http://localhost:8080/v1/databases/<database-id>/query
     }
 }
 ```
+
+Example response:
+```json
+{
+    "object": "list",
+    "results": [
+        {
+            "id": "e6d8b300-ea7c-11ec-8fea-0242ac120002",
+            "created_time": "2021-02-19T21:25:00Z",
+            "last_edited_time": "2021-02-19T21:25:00Z",
+            "properties": {
+                "Database Property 1": {
+                    "name": "Database Property 1",
+                    "type": "rich_text",
+                    "value": "My value"
+                },
+                "Database Title": {
+                    "name": "Database Title",
+                    "type": "title",
+                    "value": "My title"
+                },
+                "Status": {
+                    "name": "Status",
+                    "type": "select",
+                    "value": "Ready"
+                }
+            }
+        },
+        ...
+    ],
+    "next_cursor": "005ca066-3eb2-473a-82f7-17eb0a6455e8",
+    "has_more": true
+}
+```
+
 #### Currently supported Notion filter operators
 * equals
 * contains
