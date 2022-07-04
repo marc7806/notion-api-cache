@@ -85,8 +85,6 @@ The Caching Scheduler can be configure using the ``CACHE_SCHEDULER_HOURS``, ``CA
 
 ### Docker
 ```docker
-docker build -t notion-api-cache .
-
 docker run -d \
     -e MONGODB_URI=<mongodb-url> \
     -e MONGODB_NAME=notion-api-cache \
@@ -95,7 +93,7 @@ docker run -d \
     -e CACHE_SCHEDULER_DAYS=1 \
     -p 8080:8080 \
     --name notion-api-cache \
-    notion-api-cache:latest
+    marc7806/notion-api-cache:latest
 ```
 
 ### Docker Compose
