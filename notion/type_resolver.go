@@ -3,6 +3,7 @@ package notion
 import (
 	"errors"
 	"log"
+	"strconv"
 )
 
 type fn func(map[string]interface{}, string) string
@@ -21,6 +22,7 @@ func init() {
 		"select":           resolveSelect,
 		"multi_select":     resolveMultiSelect,
 		"formula":          resolveFormula,
+		"checkbox":         resolveCheckbox,
 	}
 }
 
@@ -80,4 +82,8 @@ func resolveMultiSelect(prop map[string]interface{}, propType string) string {
 
 func resolveFormula(prop map[string]interface{}, propType string) string {
 	return prop[propType].(map[string]interface{})["string"].(string)
+}
+
+func resolveCheckbox(prop map[string]interface{}, propType string) string {
+	return strconv.FormatBool(prop[propType].(bool))
 }
