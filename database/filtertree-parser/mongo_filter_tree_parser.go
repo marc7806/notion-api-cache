@@ -33,6 +33,14 @@ func mapOperationToMongoDbRepresentation(operation *notion.FilterOperation) inte
 		return bson.M{
 			"$regex": operation.Value,
 		}
+	} else if operation.Condition == notion.StartsWith {
+		return bson.M{
+			"$regex": "^" + operation.Value,
+		}
+	} else if operation.Condition == notion.EndsWith {
+		return bson.M{
+			"$regex": operation.Value + "$",
+		}
 	} else {
 		return bson.M{
 			"$regex": "",
