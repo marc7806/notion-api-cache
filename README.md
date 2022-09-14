@@ -67,6 +67,8 @@ Example response:
 #### Currently supported Notion filter operators
 * equals
 * contains
+* starts_with
+* ends_with
 
 ### Cache Management Endpoints
 Update Cache:
