@@ -11,12 +11,8 @@ import (
 type CacheStatusInformationResponse struct {
 	LastUpdated               string `json:"last_updated"`
 	NumberOfDatabaseDocuments int    `json:"num_database_documents"`
+	Status                    string `json:"status"`
 }
-
-var (
-	lastUpdated    time.Time
-	numUpdatedDocs int
-)
 
 func AddCacheRoutes(router *gin.RouterGroup) {
 	cacheEndpoints := router.Group("/cache")
@@ -28,9 +24,7 @@ func AddCacheRoutes(router *gin.RouterGroup) {
 }
 
 func refreshCacheEndpoint(c *gin.Context) {
-	isRefreshing, lastUpdatedTime, numDocs := cache.HandleCacheRefresh()
-	lastUpdated = lastUpdatedTime
-	numUpdatedDocs = numDocs
+	isRefreshing := cache.HandleCacheRefresh()
 	if isRefreshing {
 		c.JSON(http.StatusAccepted, gin.H{"status": "Cache is currently refreshing"})
 		return
@@ -39,9 +33,7 @@ func refreshCacheEndpoint(c *gin.Context) {
 }
 
 func clearCacheEndpoint(c *gin.Context) {
-	isRefreshing, lastUpdatedTime, numDocs := cache.HandleCacheClear()
-	lastUpdated = lastUpdatedTime
-	numUpdatedDocs = numDocs
+	isRefreshing := cache.HandleCacheClear()
 	if isRefreshing {
 		c.JSON(http.StatusAccepted, gin.H{"status": "Cache is currently refreshing"})
 		return
@@ -51,8 +43,9 @@ func clearCacheEndpoint(c *gin.Context) {
 
 func cacheStatusInformationEndpoint(c *gin.Context) {
 	cacheInfo := CacheStatusInformationResponse{
-		LastUpdated:               lastUpdated.Format(time.RFC3339),
-		NumberOfDatabaseDocuments: numUpdatedDocs,
+		LastUpdated:               cache.LastUpdated.Format(time.RFC3339),
+		NumberOfDatabaseDocuments: cache.NumUpdatedDocs,
+		Status:                    string(cache.Status),
 	}
 	c.JSON(http.StatusAccepted, cacheInfo)
 }

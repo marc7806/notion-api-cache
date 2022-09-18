@@ -15,6 +15,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type CacheStatus string
+
+const (
+	Idle       CacheStatus = "idle"
+	Refreshing             = "refreshing"
+	Clearing               = "clearing"
+)
+
 type RefreshState struct {
 	mu           sync.Mutex
 	isRefreshing bool
@@ -27,8 +35,9 @@ func (s *RefreshState) setRefreshState(state bool) {
 }
 
 var (
-	lastUpdated    time.Time
-	numUpdatedDocs int
+	LastUpdated    time.Time
+	NumUpdatedDocs int
+	Status         CacheStatus
 	refreshState   *RefreshState
 )
 
@@ -42,22 +51,27 @@ func init() {
 	}
 }
 
-func HandleCacheRefresh() (bool, time.Time, int) {
+func HandleCacheRefresh() bool {
 	if !refreshState.isRefreshing {
+		LastUpdated = time.Now()
+		Status = Refreshing
 		go refreshNotionCache()
 	}
-	return refreshState.isRefreshing, lastUpdated, numUpdatedDocs
+	return refreshState.isRefreshing
 }
 
-func HandleCacheClear() (bool, time.Time, int) {
+func HandleCacheClear() bool {
 	if !refreshState.isRefreshing {
+		LastUpdated = time.Now()
+		Status = Clearing
 		go clearCache()
 	}
-	return refreshState.isRefreshing, lastUpdated, numUpdatedDocs
+	return refreshState.isRefreshing
 }
 
 func refreshNotionCache() {
 	refreshState.setRefreshState(true)
+	defer refreshState.setRefreshState(false)
 	client := database.ConnectDb()
 
 	// Check the connection
@@ -71,9 +85,8 @@ func refreshNotionCache() {
 	}
 
 	database.DisconnectDb()
-	lastUpdated = time.Now()
-	numUpdatedDocs = updatedDocsLength
-	refreshState.setRefreshState(false)
+	NumUpdatedDocs = updatedDocsLength
+	Status = Idle
 }
 
 func cacheNotionDatabases(client *mongo.Client, databases []string) (updatedDocsLength int, err error) {
@@ -119,6 +132,7 @@ func cacheNotionDatabases(client *mongo.Client, databases []string) (updatedDocs
 
 func clearCache() {
 	refreshState.setRefreshState(true)
+	defer refreshState.setRefreshState(false)
 	client := database.ConnectDb()
 
 	log.Println("Start clearing database")
@@ -136,7 +150,6 @@ func clearCache() {
 	}
 
 	database.DisconnectDb()
-	lastUpdated = time.Now()
-	numUpdatedDocs = updateDocumentsCount
-	refreshState.setRefreshState(false)
+	NumUpdatedDocs = updateDocumentsCount
+	Status = Idle
 }
