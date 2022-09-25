@@ -26,7 +26,13 @@ POST http://localhost:8080/v1/databases/<database-id>/query
                 }
             }
         ]
-    }
+    },
+    "sorts": [
+        {
+            "property": "Status",
+            "direction": "ascending"
+        }
+    ]
 }
 ```
 
@@ -40,10 +46,10 @@ Example response:
             "created_time": "2021-02-19T21:25:00Z",
             "last_edited_time": "2021-02-19T21:25:00Z",
             "properties": {
-                "Database Property 1": {
+                "My Custom Property": {
                     "name": "Database Property 1",
                     "type": "rich_text",
-                    "value": "My value"
+                    "value": "Hello World"
                 },
                 "Database Title": {
                     "name": "Database Title",
@@ -116,7 +122,7 @@ Use mongodb to store your notion database data and query it with the native noti
 
 ✅ Scheduler for syncing the notion database data in defined intervals
 
-⬜ Sorting support
+✅ Sorting support
 
 ⬜ Api-token middleware for authentication
 

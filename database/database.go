@@ -6,7 +6,9 @@ import (
 	"log"
 
 	"github.com/marc7806/notion-cache/config"
+	sortparser "github.com/marc7806/notion-cache/database/sort-parser"
 	"github.com/marc7806/notion-cache/notion"
+	"github.com/marc7806/notion-cache/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -33,13 +35,13 @@ func DisconnectDb() {
 	}
 }
 
-func QueryData(collectionId string, findQuery *primitive.M, sort interface{}, pageSize int64, startCursor string) (result []*notion.Page, nextCursor string, hasMore bool) {
+func QueryData(collectionId string, findQuery *primitive.M, sort []types.QuerySort, pageSize int64, startCursor string) (result []*notion.Page, nextCursor string, hasMore bool) {
 	client := ConnectDb()
 	var options options.FindOptions
 	// temporary add one to page size for computing hasMore property
 	pageSize = pageSize + 1
 	options.Limit = &pageSize
-	options.Sort = bson.M{"_id": 1}
+	options.Sort = sortparser.ParseSortOptions(sort)
 
 	if startCursor != "" {
 		findQuery = addStartCursor(findQuery, startCursor)
