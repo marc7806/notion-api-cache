@@ -60,3 +60,7 @@ func ParsePage(notionResponseObject *NotionDatabaseObject) *Page {
 	page.Properties = pageProps
 	return &page
 }
+
+func BuildPropertyValueAccessorString(name string) string {
+	return "properties." + name + ".value"
+}

@@ -44,7 +44,13 @@ func QueryData(collectionId string, findQuery *primitive.M, sort []types.QuerySo
 	options.Sort = sortparser.ParseSortOptions(sort)
 
 	if startCursor != "" {
-		findQuery = addStartCursor(findQuery, startCursor)
+		var startCursorPage notion.Page
+		err := client.Database(config.DbName).Collection(collectionId).FindOne(context.Background(), bson.D{{"_id", startCursor}}).Decode(&startCursorPage)
+		if err != nil {
+			log.Fatal("Start cursor not found", err)
+		} else {
+			findQuery = addStartCursor(findQuery, startCursorPage, sort)
+		}
 	}
 
 	var results []*notion.Page
@@ -86,12 +92,19 @@ func QueryData(collectionId string, findQuery *primitive.M, sort []types.QuerySo
 	return results, nextCursor, hasMore
 }
 
-func addStartCursor(findQuery *primitive.M, startCursor string) *bson.M {
+func addStartCursor(findQuery *primitive.M, startCursor notion.Page, sort []types.QuerySort) *bson.M {
+	cursorQuery := bson.M{}
+	if sort != nil {
+		for _, sortEntry := range sort {
+			cursorQuery[notion.BuildPropertyValueAccessorString(sortEntry.Property)] = bson.M{"$gt": startCursor.Properties[sortEntry.Property].Value}
+		}
+	} else {
+		cursorQuery["_id"] = bson.M{"$gt": startCursor}
+	}
+
 	return &bson.M{
 		"$and": bson.A{
-			bson.M{
-				"_id": bson.M{"$gt": startCursor},
-			},
+			cursorQuery,
 			findQuery,
 		},
 	}
