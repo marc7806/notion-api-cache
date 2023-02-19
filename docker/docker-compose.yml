@@ -1,10 +1,10 @@
-version: '3.9'
+version: "3.9"
 services:
   mongodb:
-    image: mongo:5.0.8
+    image: mongo:6.0.4
     ports:
       - 27017:27017
-    volumes: 
+    volumes:
       - ~/mongodb/notion-api-cache:/data/db
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
