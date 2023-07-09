@@ -2,6 +2,9 @@
 
 A proxy for the [official Notion API](https://developers.notion.com/)
 
+[![Version](https://img.shields.io/docker/v/marc7806/notion-api-cache?logo=docker)](https://hub.docker.com/r/marc7806/notion-api-cache/tags)
+[![Docker Pulls](https://img.shields.io/docker/pulls/marc7806/notion-api-cache?logo=docker&label=pulls)](https://hub.docker.com/r/marc7806/notion-api-cache/)
+
 ## Main features
 💫 Blazing fast responses due to database caching
 
