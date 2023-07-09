@@ -12,7 +12,7 @@ type Scheduler struct {
 	timer *time.Timer
 }
 
-func Init() {
+func InitScheduler() {
 	log.Println("Initialize Caching Scheduler")
 	sc := New()
 	for {

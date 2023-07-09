@@ -2,54 +2,18 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"github.com/marc7806/notion-cache/config"
 	sortparser "github.com/marc7806/notion-cache/database/sort-parser"
 	"github.com/marc7806/notion-cache/notion"
 	"github.com/marc7806/notion-cache/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var mongoClient *mongo.Client
-var mongoDbHandle *mongo.Database
-
-func ConnectDb() *mongo.Database {
-
-	if mongoClient != nil && mongoDbHandle != nil {
-		return mongoDbHandle
-	}
-
-	clientOptions := options.Client().ApplyURI(config.DbUri)
-	client, err := mongo.Connect(context.Background(), clientOptions)
-	if err != nil {
-		panic(err)
-	}
-	err = client.Ping(context.TODO(), nil)
-	if err != nil {
-		log.Fatal(err)
-		fmt.Printf("Ping failed...")
-	}
-
-	fmt.Printf("Successfully initialized database connection")
-	mongoClient = client
-	mongoDbHandle = client.Database(config.DbName)
-	return mongoDbHandle
-}
-
-func DisconnectDb() {
-	err := mongoClient.Disconnect(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func QueryData(collectionId string, findQuery *primitive.M, sort []types.QuerySort, pageSize int64, startCursor string) (result []*notion.Page, nextCursor string, hasMore bool) {
-	db := ConnectDb()
+func QueryData(datastore *MongoDataStore, collectionId string, findQuery *primitive.M, sort []types.QuerySort, pageSize int64, startCursor string) (result []*notion.Page, nextCursor string, hasMore bool) {
+	db := datastore.Db
 	var options options.FindOptions
 	// temporary add one to page size for computing hasMore property
 	pageSize = pageSize + 1

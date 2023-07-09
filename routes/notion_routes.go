@@ -36,7 +36,7 @@ func queryEndpoint(c *gin.Context) {
 		findQuery = filtertreeparser.ParseFilterTree(filterTree)
 	}
 
-	results, nextCursor, hasMore := database.QueryData(databaseId, findQuery, requestBody.Sorts, requestBody.Size, requestBody.StartCursor)
+	results, nextCursor, hasMore := database.QueryData(database.DataStore, databaseId, findQuery, requestBody.Sorts, requestBody.Size, requestBody.StartCursor)
 
 	c.JSON(http.StatusOK, types.QueryResponseBody{
 		Object:     "list",

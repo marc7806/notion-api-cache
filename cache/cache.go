@@ -41,7 +41,7 @@ var (
 	refreshState   *RefreshState
 )
 
-func init() {
+func InitCache() {
 	log.Println("Initializing Notion cache")
 	// initialize refresh state
 	refreshState = new(RefreshState)
@@ -72,14 +72,12 @@ func HandleCacheClear() bool {
 func refreshNotionCache() {
 	refreshState.setRefreshState(true)
 	defer refreshState.setRefreshState(false)
-	db := database.ConnectDb()
 
-	updatedDocsLength, err := cacheNotionDatabases(db, config.NotionDatabases)
+	updatedDocsLength, err := cacheNotionDatabases(database.DataStore.Db, config.NotionDatabases)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	database.DisconnectDb()
 	NumUpdatedDocs = updatedDocsLength
 	Status = Idle
 }
@@ -105,7 +103,7 @@ func cacheNotionDatabases(db *mongo.Database, databases []string) (updatedDocsLe
 			for _, page := range notionData.Results {
 				update := bson.D{{"$set", notion.ParsePage(&page)}}
 				opts := options.Update().SetUpsert(true)
-				result, err := collection.UpdateOne(context.TODO(), bson.M{"_id": page.ID}, update, opts)
+				result, err := collection.UpdateOne(context.Background(), bson.M{"_id": page.ID}, update, opts)
 				if err != nil {
 					panic(err)
 				}
@@ -128,12 +126,11 @@ func cacheNotionDatabases(db *mongo.Database, databases []string) (updatedDocsLe
 func clearCache() {
 	refreshState.setRefreshState(true)
 	defer refreshState.setRefreshState(false)
-	db := database.ConnectDb()
 
 	log.Println("Start clearing database")
 	var updateDocumentsCount int
 	for _, notionDatabaseId := range config.NotionDatabases {
-		collection := db.Collection(notionDatabaseId)
+		collection := database.DataStore.Db.Collection(notionDatabaseId)
 
 		// Delete all the documents in the collection
 		deleteResult, err := collection.DeleteMany(context.TODO(), bson.D{{}})
@@ -144,7 +141,6 @@ func clearCache() {
 		updateDocumentsCount += int(deleteResult.DeletedCount)
 	}
 
-	database.DisconnectDb()
 	NumUpdatedDocs = updateDocumentsCount
 	Status = Idle
 }
