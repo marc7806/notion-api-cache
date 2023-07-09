@@ -16,16 +16,29 @@ import (
 )
 
 var mongoClient *mongo.Client
+var mongoDbHandle *mongo.Database
 
-func ConnectDb() *mongo.Client {
+func ConnectDb() *mongo.Database {
+
+	if mongoClient != nil && mongoDbHandle != nil {
+		return mongoDbHandle
+	}
+
 	clientOptions := options.Client().ApplyURI(config.DbUri)
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		panic(err)
 	}
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Fatal(err)
+		fmt.Printf("Ping failed...")
+	}
+
 	fmt.Printf("Successfully initialized database connection")
 	mongoClient = client
-	return client
+	mongoDbHandle = client.Database(config.DbName)
+	return mongoDbHandle
 }
 
 func DisconnectDb() {
@@ -36,7 +49,7 @@ func DisconnectDb() {
 }
 
 func QueryData(collectionId string, findQuery *primitive.M, sort []types.QuerySort, pageSize int64, startCursor string) (result []*notion.Page, nextCursor string, hasMore bool) {
-	client := ConnectDb()
+	db := ConnectDb()
 	var options options.FindOptions
 	// temporary add one to page size for computing hasMore property
 	pageSize = pageSize + 1
@@ -45,7 +58,7 @@ func QueryData(collectionId string, findQuery *primitive.M, sort []types.QuerySo
 
 	if startCursor != "" {
 		var startCursorPage notion.Page
-		err := client.Database(config.DbName).Collection(collectionId).FindOne(context.Background(), bson.D{{"_id", startCursor}}).Decode(&startCursorPage)
+		err := db.Collection(collectionId).FindOne(context.Background(), bson.D{{"_id", startCursor}}).Decode(&startCursorPage)
 		if err != nil {
 			log.Fatal("Start cursor not found", err)
 		} else {
@@ -54,7 +67,7 @@ func QueryData(collectionId string, findQuery *primitive.M, sort []types.QuerySo
 	}
 
 	var results []*notion.Page
-	cur, err := client.Database(config.DbName).Collection(collectionId).Find(context.Background(), findQuery, &options)
+	cur, err := db.Collection(collectionId).Find(context.Background(), findQuery, &options)
 	if err != nil {
 		log.Fatal(err)
 	}
