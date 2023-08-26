@@ -84,24 +84,27 @@ func refreshNotionCache() {
 
 func cacheNotionDatabases(db *mongo.Database, databases []string) (updatedDocsLength int, err error) {
 	var numDocuments int
+
+	// error handler function
+	defer func() {
+		if r := recover(); r != nil {
+			err = r.(error)
+		}
+	}()
+
 	for _, notionDatabaseId := range databases {
-		log.Println("Saving notion data to database")
+		log.Println("Syncing notion data to database")
+		collection := db.Collection(notionDatabaseId)
+		syncTime := time.Now()
 
 		startCursor := ""
 		hasMore := true
 		for hasMore {
 			notionData := notion.FetchNotionDataByDatabaseId(notionDatabaseId, startCursor)
-			collection := db.Collection(notionDatabaseId)
-
-			// error handler function
-			defer func() {
-				if r := recover(); r != nil {
-					err = r.(error)
-				}
-			}()
 
 			for _, page := range notionData.Results {
-				update := bson.D{{"$set", notion.ParsePage(&page)}}
+				update := bson.D{{"$set", notion.ParsePage(&page, &syncTime)}}
+				// if query matches then update document, otherwise insert as new
 				opts := options.Update().SetUpsert(true)
 				result, err := collection.UpdateOne(context.Background(), bson.M{"_id": page.ID}, update, opts)
 				if err != nil {
@@ -119,6 +122,14 @@ func cacheNotionDatabases(db *mongo.Database, databases []string) (updatedDocsLe
 			hasMore = notionData.HasMore
 			log.Printf("Finished page. Go to next cursor: %s", startCursor)
 		}
+
+		// delete all entities with older sync timestamp - Those represent entities that got deleted in notion
+		result, err := collection.DeleteMany(context.Background(), bson.M{"lastsynctime": bson.M{"$lt": syncTime}})
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("Deleted %d documents without sync", result.DeletedCount)
+
 	}
 	return numDocuments, nil
 }

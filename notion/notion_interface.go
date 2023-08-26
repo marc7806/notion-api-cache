@@ -6,6 +6,7 @@ import (
 
 type Page struct {
 	ID             string    `json:"id,omitempty" bson:"_id,omitempty"`
+	LastSyncTime   time.Time `json:"last_sync_time"`
 	CreatedTime    time.Time `json:"created_time"`
 	LastEditedTime time.Time `json:"last_edited_time"`
 	CreatedBy      struct {
@@ -33,7 +34,7 @@ type PageProperty struct {
 	Value string `json:"value"`
 }
 
-func ParsePage(notionResponseObject *NotionDatabaseObject) *Page {
+func ParsePage(notionResponseObject *NotionDatabaseObject, lastSyncTime *time.Time) *Page {
 	page := Page{
 		ID:             notionResponseObject.ID,
 		CreatedTime:    notionResponseObject.CreatedTime,
@@ -45,6 +46,7 @@ func ParsePage(notionResponseObject *NotionDatabaseObject) *Page {
 		Archived:       notionResponseObject.Archived,
 		URL:            notionResponseObject.URL,
 		Parent:         notionResponseObject.Parent,
+		LastSyncTime:   *lastSyncTime,
 	}
 	pageProps := make(map[string]PageProperty)
 	for key, prop := range notionResponseObject.Properties {
