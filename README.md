@@ -92,7 +92,7 @@ Get Cache Status:
 ```
 GET http://localhost:8080/v1/cache/status
 ```
-The Caching Scheduler can be configure using the ``CACHE_SCHEDULER_HOURS``, ``CACHE_SCHEDULER_MINUTES`` and ``CACHE_SCHEDULER_DAYS`` environment variables. ``CACHE_SCHEDULER_DAYS=1`` would mean that the notion databases get synced once every day. With ``CACHE_ON_STARTUP=true`` you can configure to automatically trigger a cache refresh on application start.
+The Caching Scheduler can be configured using the ``CACHE_SCHEDULER_HOURS``, ``CACHE_SCHEDULER_MINUTES`` and ``CACHE_SCHEDULER_DAYS`` environment variables. ``CACHE_SCHEDULER_DAYS=1`` would mean that the notion databases get synced once every day. With ``CACHE_ON_STARTUP=true`` you can configure to automatically trigger a cache refresh on application start.
 
 ### Docker
 ```docker
