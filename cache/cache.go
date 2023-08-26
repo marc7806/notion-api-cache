@@ -124,7 +124,13 @@ func cacheNotionDatabases(db *mongo.Database, databases []string) (updatedDocsLe
 		}
 
 		// delete all entities with older sync timestamp - Those represent entities that got deleted in notion
-		result, err := collection.DeleteMany(context.Background(), bson.M{"lastsynctime": bson.M{"$lt": syncTime}})
+		deleteFilter := bson.D{
+			{"$or", bson.A{
+				bson.M{"lastsynctime": bson.M{"$exists": false}},
+				bson.M{"lastsynctime": bson.M{"$lt": syncTime}},
+			}},
+		}
+		result, err := collection.DeleteMany(context.Background(), deleteFilter)
 		if err != nil {
 			panic(err)
 		}
