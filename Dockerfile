@@ -1,13 +1,18 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.18-alpine AS build
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.18-alpine AS build
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 
 COPY . ./
 
 RUN go mod download
-RUN go build -o /notion-api-cache
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /notion-api-cache
 
 FROM alpine:latest
 
