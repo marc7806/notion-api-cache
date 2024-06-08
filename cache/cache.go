@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"fmt"
+	"github.com/marc7806/notion-cache/metrics"
 	"log"
 	"sync"
 	"time"
@@ -80,6 +81,7 @@ func refreshNotionCache() {
 
 	NumUpdatedDocs = updatedDocsLength
 	Status = Idle
+	metrics.SetNumberOfTotalCachedDocuments(updatedDocsLength)
 }
 
 func cacheNotionDatabases(db *mongo.Database, databases []string) (updatedDocsLength int, err error) {

@@ -120,6 +120,9 @@ docker compose up -d
 ### Mongodb
 Use mongodb to store your notion database data and query it with the native notion query syntax.
 
+## Metrics
+You can read metrics from the `/metrics` endpoint. The metrics are exposed in the prometheus format.
+
 ## Upcoming features
 ✅ Cursor-based Pagination support
 
