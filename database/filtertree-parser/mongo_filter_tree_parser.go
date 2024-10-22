@@ -49,11 +49,11 @@ func mapOperationToMongoDbRepresentation(operation *notion.FilterOperation) inte
 	} else if operation.Condition == notion.IsNotEmpty {
 		boolValue, err := utils.StringToBool(operation.Value)
 
-		if err != nil && boolValue {
+		if err == nil && boolValue {
 			return bson.M{
 				"$ne": "",
 			}
-		} else if err != nil && !boolValue {
+		} else if err == nil && !boolValue {
 			return bson.M{
 				"$eq": "",
 			}
@@ -61,11 +61,11 @@ func mapOperationToMongoDbRepresentation(operation *notion.FilterOperation) inte
 	} else if operation.Condition == notion.IsEmpty {
 		boolValue, err := utils.StringToBool(operation.Value)
 
-		if err != nil && boolValue {
+		if err == nil && boolValue {
 			return bson.M{
 				"$eq": "",
 			}
-		} else if err != nil && !boolValue {
+		} else if err == nil && !boolValue {
 			return bson.M{
 				"$ne": "",
 			}
