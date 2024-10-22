@@ -29,6 +29,10 @@ func mapOperationToMongoDbRepresentation(operation *notion.FilterOperation) inte
 		return bson.M{
 			"$eq": operation.Value,
 		}
+	} else if operation.Condition == notion.DoesNotEqual {
+		return bson.M{
+			"$ne": operation.Value,
+		}
 	} else if operation.Condition == notion.Contains {
 		return bson.M{
 			"$regex": operation.Value,
@@ -40,6 +44,14 @@ func mapOperationToMongoDbRepresentation(operation *notion.FilterOperation) inte
 	} else if operation.Condition == notion.EndsWith {
 		return bson.M{
 			"$regex": operation.Value + "$",
+		}
+	} else if operation.Condition == notion.IsNotEmpty {
+		return bson.M{
+			"$ne": "",
+		}
+	} else if operation.Condition == notion.IsEmpty {
+		return bson.M{
+			"$eq": "",
 		}
 	} else {
 		return bson.M{
