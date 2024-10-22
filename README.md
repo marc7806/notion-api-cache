@@ -75,9 +75,12 @@ Example response:
 
 #### Currently supported Notion filter operators
 * equals
+* does_not_equal
 * contains
 * starts_with
 * ends_with
+* is_empty
+* is_not_empty
 
 ### Cache Management Endpoints
 Update Cache:
