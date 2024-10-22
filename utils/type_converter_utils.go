@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/marc7806/notion-cache/types"
+	"strconv"
 )
 
 func BinarySortDirection(sortDirection types.QuerySortDirection) int8 {
@@ -13,4 +14,12 @@ func BinarySortDirection(sortDirection types.QuerySortDirection) int8 {
 	default:
 		return 1
 	}
+}
+
+func StringToBool(str string) (bool, error) {
+	boolVal, err := strconv.ParseBool(str)
+	if err != nil {
+		return false, err
+	}
+	return boolVal, nil
 }

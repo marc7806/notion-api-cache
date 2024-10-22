@@ -2,6 +2,7 @@ package filtertreeparser
 
 import (
 	"github.com/marc7806/notion-cache/notion"
+	"github.com/marc7806/notion-cache/utils"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -46,16 +47,32 @@ func mapOperationToMongoDbRepresentation(operation *notion.FilterOperation) inte
 			"$regex": operation.Value + "$",
 		}
 	} else if operation.Condition == notion.IsNotEmpty {
-		return bson.M{
-			"$ne": "",
+		boolValue, err := utils.StringToBool(operation.Value)
+
+		if err != nil && boolValue {
+			return bson.M{
+				"$ne": "",
+			}
+		} else if err != nil && !boolValue {
+			return bson.M{
+				"$eq": "",
+			}
 		}
 	} else if operation.Condition == notion.IsEmpty {
-		return bson.M{
-			"$eq": "",
+		boolValue, err := utils.StringToBool(operation.Value)
+
+		if err != nil && boolValue {
+			return bson.M{
+				"$eq": "",
+			}
+		} else if err != nil && !boolValue {
+			return bson.M{
+				"$ne": "",
+			}
 		}
-	} else {
-		return bson.M{
-			"$regex": "",
-		}
+	}
+
+	return bson.M{
+		"$regex": "",
 	}
 }
