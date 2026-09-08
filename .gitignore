@@ -1,4 +1,5 @@
 .env*
 !.env.sample
+
 __debug**
 notion-cache
