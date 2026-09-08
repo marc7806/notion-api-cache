@@ -1,9 +1,12 @@
 package filtertreeparser
 
 import (
+	"regexp"
+
 	"github.com/marc7806/notion-cache/notion"
 	"github.com/marc7806/notion-cache/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type MongoDbParser struct{}
@@ -37,6 +40,10 @@ func mapOperationToMongoDbRepresentation(operation *notion.FilterOperation) inte
 	} else if operation.Condition == notion.Contains {
 		return bson.M{
 			"$regex": operation.Value,
+		}
+	} else if operation.Condition == notion.DoesNotContain {
+		return bson.M{
+			"$not": primitive.Regex{Pattern: regexp.QuoteMeta(operation.Value)},
 		}
 	} else if operation.Condition == notion.StartsWith {
 		return bson.M{
