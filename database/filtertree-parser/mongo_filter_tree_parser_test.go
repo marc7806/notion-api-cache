@@ -43,3 +43,35 @@ func TestCreateNestedFilterTree(t *testing.T) {
 		t.Errorf("Wrong property value. Expected '%s' but was '%s'", "My custom value", prop1["properties.Test Property 1.value"].(primitive.M)["$eq"])
 	}
 }
+
+func TestDoesNotContainFilter(t *testing.T) {
+	var inputData map[string]interface{}
+	filterQueryJson := []byte(`
+	{
+        "property": "Test Property 1",
+        "text": {
+            "does_not_contain": "vorläuf. Freigabe Live-CC"
+        }
+    }
+	`)
+	err := json.Unmarshal(filterQueryJson, &inputData)
+	if err != nil {
+		t.Error("Error while unmarshalling input json string")
+	}
+	filterTree := notion.CreateFilterTree(inputData)
+	mongoQuery := *ParseFilterTree(filterTree)
+
+	condition, ok := mongoQuery["properties.Test Property 1.value"].(primitive.M)
+	if !ok {
+		t.Fatalf("Missing condition for property. Query was '%s'", mongoQuery)
+	}
+	regex, ok := condition["$not"].(primitive.Regex)
+	if !ok {
+		t.Fatalf("Wrong condition. Expected '$not' with regex value but was '%s'", condition)
+	}
+	// the dot is a regex metacharacter and has to be escaped to match literally
+	expectedPattern := `vorläuf\. Freigabe Live-CC`
+	if regex.Pattern != expectedPattern {
+		t.Errorf("Wrong regex pattern. Expected '%s' but was '%s'", expectedPattern, regex.Pattern)
+	}
+}

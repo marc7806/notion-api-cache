@@ -77,6 +77,7 @@ Example response:
 * equals
 * does_not_equal
 * contains
+* does_not_contain
 * starts_with
 * ends_with
 * is_empty
